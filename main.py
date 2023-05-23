@@ -10,7 +10,13 @@ words = [
     "estikopat",
     "widmo",
     "meta",
-    "malakser"
+    "malakser",
+    "moszna",
+    "biedrona",
+    "czeslaw",
+    "lubie",
+    "duze",
+    "lody"
 ]
 
 W = 20
@@ -38,21 +44,37 @@ def get_coords(word, off):
             for x in range(W):
                 if board[x][y] == word[off]:
                     coords.append((x, y - off, True))
-                    coords.append((x, y, False))
+                    coords.append((x - off, y, False))
         return coords
 
-def check_collision(word, coords, off):
+def check_collision(word, coords):
     # check board bounding box (FIXME)
     if coords[2]:
-        if coords[0] - off + len(word) > W:
+        if coords[1] + len(word) > H:
             return True
     else:
-        if coords[1] - off + len(word) > H:
+        if coords[0] + len(word) > W:
             return True 
-    # TODO: check letter collisions
+
+    # check letter collisions
+    x = coords[0]
+    y = coords[1]
+    dir = coords[2]
+    if dir:
+        for i in range(0, len(word)):
+            if board[x][y+i] != "_" and board[x][y+i] != word[i]:
+                return True
+    else:
+        for i in range(0, len(word)):
+            if board[x+i][y] != "_" and board[x+i][y] != word[i]:
+                return True
+    
     return False
 
-def place_word(word, x, y, dir):
+def place_word(word, coords):
+    x = coords[0]
+    y = coords[1]
+    dir = coords[2]
     if dir:
         for i in range(0, len(word)):
             board[x][y+i] = word[i]
@@ -61,17 +83,15 @@ def place_word(word, x, y, dir):
             board[x+i][y] = word[i]
 
 def check_word(word):
-    print(word)
     for off in range(len(word)):
         coords = get_coords(word, off)
         if len(coords) == 0:
             # no common letters, skip by default (TODO: place where no collisions)
             continue
         for coord in coords:
-            collided = check_collision(word, coord, off)
+            collided = check_collision(word, coord)
             if not collided:
-                print(coord)
-                place_word(word, coord[0], coord[1], coord[2])
+                place_word(word, coord)
                 return
 
 def print_board():
@@ -79,6 +99,7 @@ def print_board():
         for x in range(W):
             print(str(board[x][y]) + " ", end='')
         print("")
+    print("")
 
 for word in words:
     check_word(word)
