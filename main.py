@@ -1,4 +1,11 @@
 import random
+import pandas as pd
+import docx
+import os
+from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT
+
 words = [
     "banan",
     "rower",
@@ -137,5 +144,36 @@ def adjust_board():
 for word in words:
     check_word(word)
 adjust_board()
-print(f"Odnajdź w gąszczu literek następujące wyrazy: {words}")
+print(f"Odnajdź w gąszczu literek i zakreśl następujące wyrazy: {words}")
 print_board()
+
+
+boardDataFrame = pd.DataFrame(board)
+print(boardDataFrame)
+
+doc = docx.Document()
+doc.add_paragraph(f"Odnajdź w gąszczu literek i zakreśl następujące wyrazy: {words}")
+table = doc.add_table(rows=boardDataFrame.shape[0], cols=boardDataFrame.shape[1])
+table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+for i in range(boardDataFrame.shape[0]):
+    for j in range(boardDataFrame.shape[1]):
+        cell = boardDataFrame.iat[i, j]
+        table.cell(i, j).text = str(cell)
+        table.cell(i, j).width = 1
+        table.cell(i, j).height = 1
+
+doc.add_paragraph(f"W nagrodę możesz pokolorwać poniższy obrazek.")
+last_paragraph = doc.paragraphs[-1] 
+last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+lista_kolorowanek = os.listdir('./kolorowanki')
+kolorowanka = random.choice(lista_kolorowanek)
+
+image_path=f"./kolorowanki/{kolorowanka}"
+doc.add_picture(image_path, width=Inches(3.0), height=Inches(3.0))
+last_paragraph = doc.paragraphs[-1] 
+last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# save the doc
+doc.save('./test.docx')
