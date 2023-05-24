@@ -1,26 +1,30 @@
-import numpy
-
+import random
 words = [
-    "dupa",
-    "gorandrzej",
-    "kierwo",
-    "patol",
-    "megatron",
-    "morwa",
-    "estikopat",
-    "widmo",
-    "meta",
-    "malakser",
-    "moszna",
-    "biedrona",
-    "czeslaw",
-    "lubie",
-    "duze",
+    "banan",
+    "rower",
+    "Emilia",
+    "Matylda",
+    "mama",
+    "tata",
+    "kajak",
+    "bajka",
+    "zdrowie",
+    "miłość",
+    "dobro",
+    "sukienka",
+    "łóżko",
+    "pies",
+    "kotek",
+    "uwaga",
+    "magia",
+    "czary",
+    "zabawa",
+    "wieloryb",
     "lody"
 ]
 
-W = 20
-H = 20
+W = 100
+H = 100
 
 board = []
 init = False
@@ -95,12 +99,43 @@ def check_word(word):
                 return
 
 def print_board():
-    for y in range(H):
-        for x in range(W):
-            print(str(board[x][y]) + " ", end='')
+    for y in range(len(board)):
+        for x in range(len(board[0])):
+            print(str(board[y][x]) + " ", end='')
         print("")
     print("")
 
+def adjust_board():
+    global board
+    board_trimmed = []
+    maxY, minY, maxX, minX = 0, H, 0, W
+    for y in range(H):
+        for x in range(W): 
+            if board[y][x] != '_':
+                if maxY < y:
+                    maxY = y
+                if minY > y:
+                    minY = y
+                if maxX < x:
+                    maxX = x
+                if minX > x:
+                    minX = x
+
+    i = 0
+    for y in range(minY, maxY + 1):
+        board_trimmed.append([])
+        for x in range(minX, maxX + 1):
+            if (board[y][x] == '_'):
+                board_trimmed[i].append(random.choice('AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ'))
+            else:
+                board_trimmed[i].append(board[y][x].upper())
+        i += 1
+
+    board.clear()
+    board = board_trimmed.copy() 
+
 for word in words:
     check_word(word)
-    print_board()
+adjust_board()
+print(f"Odnajdź w gąszczu literek następujące wyrazy: {words}")
+print_board()
