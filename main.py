@@ -10,7 +10,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 
 INITIAL_WIDTH = 30
 INITIAL_HEIGHT = 30
-WORD_LIMIT = 15
+WORD_LIMIT = 25
 HEIGHT_LIMIT = 14
 WIDTH_LIMIT = 20
 
@@ -20,8 +20,7 @@ board = []
 init = False
 
 def import_words():
-    global words
-    global failed_words
+    global words, failed_words
     local_words = []
     with open("wyrazy.csv", encoding="utf8") as csvfile:
         csvreader = csv.reader(csvfile, delimiter=",")
@@ -31,6 +30,7 @@ def import_words():
     [unlimited_words] = local_words
     words = random.sample(unlimited_words, WORD_LIMIT)
     failed_words = words.copy()
+    
 def init_board():
     for y in range(INITIAL_HEIGHT):
         board.append([])
@@ -192,6 +192,7 @@ def generate_board():
         words.remove(failed_word)
     print(f"failed_words: {failed_words}")
     print(f"final words: {words}")
+#    print_board()
     adjust_board()
     if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
         print(f"-------tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
@@ -210,4 +211,4 @@ def generate_board():
 
 generate_board()
 print_board()
-create_doc()
+#create_doc()
