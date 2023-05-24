@@ -211,4 +211,4 @@ def generate_board():
 
 generate_board()
 print_board()
-#create_doc()
+create_doc()
