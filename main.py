@@ -8,18 +8,20 @@ from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
-INITIAL_WIDTH = 20
-INITIAL_HEIGHT = 20
+INITIAL_WIDTH = 30
+INITIAL_HEIGHT = 30
 WORD_LIMIT = 15
 HEIGHT_LIMIT = 14
 WIDTH_LIMIT = 20
 
+failed_words = []
 words = []
 board = []
 init = False
 
 def import_words():
     global words
+    global failed_words
     local_words = []
     with open("wyrazy.csv", encoding="utf8") as csvfile:
         csvreader = csv.reader(csvfile, delimiter=",")
@@ -28,7 +30,7 @@ def import_words():
             local_words.append(word)
     [unlimited_words] = local_words
     words = random.sample(unlimited_words, WORD_LIMIT)
-
+    failed_words = words.copy()
 def init_board():
     for y in range(INITIAL_HEIGHT):
         board.append([])
@@ -68,10 +70,12 @@ def check_collision(word, coords):
     if dir:
         for i in range(0, len(word)):
             if board[x][y+i] != "_" and board[x][y+i] != word[i]:
+            #if board[y+i][x] != "_" and board[y+i][x] != word[i]: czemu tu koordynaty są odwrotnie^?
                 return True
     else:
         for i in range(0, len(word)):
             if board[x+i][y] != "_" and board[x+i][y] != word[i]:
+            #if board[y][x+i] != "_" and board[y][x+i] != word[i]: czemu tu koordynaty są odwrotnie^?
                 return True
     
     return False
@@ -83,14 +87,23 @@ def place_word(word, coords):
     if dir:
         for i in range(0, len(word)):
             board[x][y+i] = word[i]
+#            print(f"udało się położyć literę słowa {word}")
+            if i == len(word) - 1:
+                print(f"{words},{failed_words}")
+                failed_words.remove(word)
     else:
         for i in range(0, len(word)):
             board[x+i][y] = word[i]
+#            print(f"udało się położyć literę słowa {word}")
+            if i == len(word) - 1:
+                print(f"{words},{failed_words}")
+                failed_words.remove(word)
 
 def check_word(word):
     for off in range(len(word)):
         coords = get_coords(word, off)
         if len(coords) == 0:
+#            print(f"nie udało się położyć litery słowa {word}")
             # no common letters, skip by default (TODO: place where no collisions)
             continue
         for coord in coords:
@@ -169,14 +182,20 @@ def create_doc():
     print(f"skreślankę zapisano do pliku ./skreslanka-{currentTimeString }.docx")
 
 def generate_board():
-    global init, words, board
+    global init, words, failed_words, board
     init_board()
     import_words()
+    print(words)
     for word in words:
         check_word(word)
+    for failed_word in failed_words:
+        words.remove(failed_word)
+    print(f"words: {words}")
+    print(f"failed_words {failed_words}")
     adjust_board()
     if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
         print(f"tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
+        failed_words.clear()
         words.clear()
         board.clear()
         init = False
@@ -184,6 +203,7 @@ def generate_board():
         generate_board()
     if len(board) - 2 > len(board[0]) or len(board[0]) - 2 > len(board):
         print(f"kształt tabeli za bardzo odbiega od kwadratu (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
+        failed_words.clear()
         words.clear()
         board.clear()
         init = False
