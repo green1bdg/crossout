@@ -165,7 +165,7 @@ def create_doc():
     last_paragraph = doc.paragraphs[-1] 
     last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    doc.save(f"./skreślanka-{currentTimeString }.docx")
+    doc.save(f"./skreslanka-{currentTimeString }.docx")
 
 def generate_board():
     global init, words, board
