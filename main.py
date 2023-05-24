@@ -8,9 +8,9 @@ from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
-W = 20
-H = 20
-WORD_LIMIT = 10
+INITIAL_WIDTH = 20
+INITIAL_HEIGHT = 20
+WORD_LIMIT = 15
 HEIGHT_LIMIT = 14
 WIDTH_LIMIT = 20
 
@@ -30,23 +30,23 @@ def import_words():
     words = random.sample(unlimited_words, WORD_LIMIT)
 
 def init_board():
-    for y in range(H):
+    for y in range(INITIAL_HEIGHT):
         board.append([])
-        for x in range(W):
+        for x in range(INITIAL_WIDTH):
             board[y].append("_")
 
 def get_coords(word, off):
     global init
     if not init:
         size = len(word)
-        x = int((W - size) / 2)
-        y = int(H / 2)
+        x = int((INITIAL_WIDTH - size) / 2)
+        y = int(INITIAL_HEIGHT / 2)
         init = True
         return [(x, y, False)]
     else:
         coords = []
-        for y in range(H):
-            for x in range(W):
+        for y in range(INITIAL_HEIGHT):
+            for x in range(INITIAL_WIDTH):
                 if board[x][y] == word[off]:
                     coords.append((x, y - off, True))
                     coords.append((x - off, y, False))
@@ -55,10 +55,10 @@ def get_coords(word, off):
 def check_collision(word, coords):
     # check board bounding box (FIXME)
     if coords[2]:
-        if coords[1] + len(word) > H:
+        if coords[1] + len(word) > INITIAL_HEIGHT:
             return True
     else:
-        if coords[0] + len(word) > W:
+        if coords[0] + len(word) > INITIAL_WIDTH:
             return True 
 
     # check letter collisions
@@ -109,9 +109,9 @@ def print_board():
 def adjust_board():
     global board
     board_trimmed = []
-    maxY, minY, maxX, minX = 0, H, 0, W
-    for y in range(H):
-        for x in range(W): 
+    maxY, minY, maxX, minX = 0, INITIAL_HEIGHT, 0, INITIAL_WIDTH
+    for y in range(INITIAL_HEIGHT):
+        for x in range(INITIAL_WIDTH): 
             if board[y][x] != '_':
                 if maxY < y:
                     maxY = y
@@ -177,6 +177,13 @@ def generate_board():
     adjust_board()
     if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
         print(f"tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
+        words.clear()
+        board.clear()
+        init = False
+        init_board()
+        generate_board()
+    if len(board) - 2 > len(board[0]) or len(board[0]) - 2 > len(board):
+        print(f"kształt tabeli za bardzo odbiega od kwadratu (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
         words.clear()
         board.clear()
         init = False
