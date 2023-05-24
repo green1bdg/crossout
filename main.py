@@ -166,6 +166,7 @@ def create_doc():
     last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.save(f"./skreslanka-{currentTimeString }.docx")
+    print(f"skreślankę zapisano do pliku ./skreslanka-{currentTimeString }.docx")
 
 def generate_board():
     global init, words, board
@@ -175,7 +176,7 @@ def generate_board():
         check_word(word)
     adjust_board()
     if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
-        print(f"tabela wyszła zbyt wysoka ({len(board)})... ponawiam generowanie.")
+        print(f"tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
         words.clear()
         board.clear()
         init = False
