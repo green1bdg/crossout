@@ -2,44 +2,38 @@ import random
 import pandas as pd
 import docx
 import os
+import csv
+from datetime import datetime
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
-words = [
-    "banan",
-    "rower",
-    "Emilia",
-    "Matylda",
-    "mama",
-    "tata",
-    "kajak",
-    "bajka",
-    "zdrowie",
-    "miłość",
-    "dobro",
-    "sukienka",
-    "łóżko",
-    "pies",
-    "kotek",
-    "uwaga",
-    "magia",
-    "czary",
-    "zabawa",
-    "wieloryb",
-    "lody"
-]
+W = 20
+H = 20
+WORD_LIMIT = 10
+HEIGHT_LIMIT = 14
+WIDTH_LIMIT = 20
 
-W = 100
-H = 100
-
+words = []
 board = []
 init = False
 
-for y in range(H):
-    board.append([])
-    for x in range(W):
-        board[y].append("_")
+def import_words():
+    global words
+    local_words = []
+    with open("wyrazy.csv", encoding="utf8") as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=",")
+    
+        for word in csvreader:
+            local_words.append(word)
+    [unlimited_words] = local_words
+    words = random.sample(unlimited_words, WORD_LIMIT)
+
+def init_board():
+    for y in range(H):
+        board.append([])
+        for x in range(W):
+            board[y].append("_")
 
 def get_coords(word, off):
     global init
@@ -141,39 +135,53 @@ def adjust_board():
     board.clear()
     board = board_trimmed.copy() 
 
-for word in words:
-    check_word(word)
-adjust_board()
-print(f"Odnajdź w gąszczu literek i zakreśl następujące wyrazy: {words}")
+def create_doc():
+    global board
+    boardDataFrame = pd.DataFrame(board)
+    currentTime = datetime.now()
+    currentTimeString = currentTime.strftime("%Y_%m_%d_%H_%M_%S")
+    
+    doc = docx.Document()
+    doc.add_paragraph(f"Odnajdź w gąszczu literek i zakreśl następujące wyrazy: {words}")
+    table = doc.add_table(rows=boardDataFrame.shape[0], cols=boardDataFrame.shape[1])
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    for i in range(boardDataFrame.shape[0]):
+        for j in range(boardDataFrame.shape[1]):
+            cell = boardDataFrame.iat[i, j]
+            table.cell(i, j).text = str(cell)
+            table.cell(i, j).width = 1
+            table.cell(i, j).height = 1
+
+    doc.add_paragraph(f"W nagrodę możesz pokolorwać poniższy obrazek.")
+    last_paragraph = doc.paragraphs[-1] 
+    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    lista_kolorowanek = os.listdir('./kolorowanki')
+    kolorowanka = random.choice(lista_kolorowanek)
+
+    image_path=f"./kolorowanki/{kolorowanka}"
+    doc.add_picture(image_path, width=Inches(3.0), height=Inches(3.0))
+    last_paragraph = doc.paragraphs[-1] 
+    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    doc.save(f"./skreślanka-{currentTimeString }.docx")
+
+def generate_board():
+    global init, words, board
+    init_board()
+    import_words()
+    for word in words:
+        check_word(word)
+    adjust_board()
+    if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
+        print(f"tabela wyszła zbyt wysoka ({len(board)})... ponawiam generowanie.")
+        words.clear()
+        board.clear()
+        init = False
+        init_board()
+        generate_board()
+
+generate_board()
 print_board()
-
-
-boardDataFrame = pd.DataFrame(board)
-print(boardDataFrame)
-
-doc = docx.Document()
-doc.add_paragraph(f"Odnajdź w gąszczu literek i zakreśl następujące wyrazy: {words}")
-table = doc.add_table(rows=boardDataFrame.shape[0], cols=boardDataFrame.shape[1])
-table.alignment = WD_TABLE_ALIGNMENT.CENTER
-
-for i in range(boardDataFrame.shape[0]):
-    for j in range(boardDataFrame.shape[1]):
-        cell = boardDataFrame.iat[i, j]
-        table.cell(i, j).text = str(cell)
-        table.cell(i, j).width = 1
-        table.cell(i, j).height = 1
-
-doc.add_paragraph(f"W nagrodę możesz pokolorwać poniższy obrazek.")
-last_paragraph = doc.paragraphs[-1] 
-last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-lista_kolorowanek = os.listdir('./kolorowanki')
-kolorowanka = random.choice(lista_kolorowanek)
-
-image_path=f"./kolorowanki/{kolorowanka}"
-doc.add_picture(image_path, width=Inches(3.0), height=Inches(3.0))
-last_paragraph = doc.paragraphs[-1] 
-last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-# save the doc
-doc.save('./test.docx')
+create_doc()
