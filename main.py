@@ -89,14 +89,14 @@ def place_word(word, coords):
             board[x][y+i] = word[i]
 #            print(f"udało się położyć literę słowa {word}")
             if i == len(word) - 1:
-                print(f"{words},{failed_words}")
+#                print(f"{words},{failed_words}")
                 failed_words.remove(word)
     else:
         for i in range(0, len(word)):
             board[x+i][y] = word[i]
 #            print(f"udało się położyć literę słowa {word}")
             if i == len(word) - 1:
-                print(f"{words},{failed_words}")
+#                print(f"{words},{failed_words}")
                 failed_words.remove(word)
 
 def check_word(word):
@@ -185,29 +185,27 @@ def generate_board():
     global init, words, failed_words, board
     init_board()
     import_words()
-    print(words)
+    print(f"initial words: {words}")
     for word in words:
         check_word(word)
     for failed_word in failed_words:
         words.remove(failed_word)
-    print(f"words: {words}")
-    print(f"failed_words {failed_words}")
+    print(f"failed_words: {failed_words}")
+    print(f"final words: {words}")
     adjust_board()
     if len(board) > HEIGHT_LIMIT or len(board[0]) > WIDTH_LIMIT:
-        print(f"tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
+        print(f"-------tabela wyszła zbyt duża (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
         failed_words.clear()
         words.clear()
         board.clear()
         init = False
-        init_board()
         generate_board()
     if len(board) - 2 > len(board[0]) or len(board[0]) - 2 > len(board):
-        print(f"kształt tabeli za bardzo odbiega od kwadratu (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
+        print(f"-------kształt tabeli za bardzo odbiega od kwadratu (y={len(board)} * x={len(board[0])} )... ponawiam generowanie.")
         failed_words.clear()
         words.clear()
         board.clear()
         init = False
-        init_board()
         generate_board()
 
 generate_board()
